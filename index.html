@@ -1,1 +1,1090 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blockchain Predictiva · SENSORAMA</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg:    #05080F;
+  --s1:    #090E1A;
+  --s2:    #0D1426;
+  --border:#162038;
+  --cyan:  #00D4FF;
+  --cyan2: #0099CC;
+  --low:   #00E5A0;
+  --mid:   #FFB700;
+  --high:  #FF3355;
+  --sara:  #D63384;
+  --laura: #4361EE;
+  --text:  #E2EDF8;
+  --muted: #6A88AA;
+  --card:  #0C1422;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Space Grotesk',sans-serif;
+  overflow-x:hidden;
+}
+
+/* ── CANVAS PARTICLES ── */
+#particles{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:0.4;}
+
+/* ── SECTIONS ── */
+section{position:relative;z-index:1;}
+
+/* ── NAV ── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  background:rgba(5,8,15,0.85);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+  padding:12px 24px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.nav-logo{
+  display:flex;align-items:center;gap:10px;
+  font-size:13px;font-weight:700;color:var(--cyan);
+}
+.nav-logo .dot{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--low);
+  box-shadow:0 0 8px var(--low);
+  animation:pulse 2s infinite;
+}
+.nav-links{
+  display:flex;gap:6px;
+}
+.nav-link{
+  padding:5px 12px;border-radius:20px;
+  font-size:11px;font-weight:600;
+  color:var(--muted);
+  cursor:pointer;
+  border:1px solid transparent;
+  transition:all .3s;
+  text-decoration:none;
+}
+.nav-link:hover{color:var(--cyan);border-color:rgba(0,212,255,.3);}
+
+/* ── HERO ── */
+.hero{
+  min-height:100vh;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  text-align:center;
+  padding:100px 24px 60px;
+}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(0,212,255,.08);
+  border:1px solid rgba(0,212,255,.25);
+  border-radius:20px;
+  padding:6px 16px;
+  font-size:11px;font-weight:600;
+  color:var(--cyan);letter-spacing:2px;
+  text-transform:uppercase;
+  margin-bottom:24px;
+  animation:fadeUp .6s ease;
+}
+.hero-title{
+  font-size:clamp(28px,5vw,56px);
+  font-weight:700;line-height:1.1;
+  margin-bottom:16px;
+  animation:fadeUp .7s ease;
+}
+.hero-title em{
+  color:var(--cyan);font-style:normal;
+  text-shadow:0 0 32px rgba(0,212,255,.4);
+}
+.hero-sub{
+  font-size:clamp(14px,2vw,18px);
+  color:var(--muted);
+  max-width:600px;
+  line-height:1.7;
+  margin-bottom:40px;
+  animation:fadeUp .8s ease;
+}
+.hero-stats{
+  display:flex;gap:24px;flex-wrap:wrap;justify-content:center;
+  animation:fadeUp .9s ease;
+}
+.hero-stat{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:16px 24px;
+  text-align:center;
+  transition:transform .3s,border-color .3s;
+}
+.hero-stat:hover{transform:translateY(-4px);border-color:var(--cyan);}
+.hero-stat .num{font-size:28px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--cyan);}
+.hero-stat .lbl{font-size:11px;color:var(--muted);margin-top:4px;}
+.scroll-hint{
+  position:absolute;bottom:32px;left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  font-size:10px;color:var(--muted);letter-spacing:2px;
+  animation:bounce 2s infinite;
+}
+.scroll-hint::after{
+  content:'';
+  width:1px;height:32px;
+  background:linear-gradient(to bottom,var(--muted),transparent);
+}
+
+/* ── SECTION WRAPPER ── */
+.sec-wrap{
+  max-width:1100px;
+  margin:0 auto;
+  padding:80px 24px;
+}
+.sec-label{
+  font-size:10px;font-weight:600;
+  letter-spacing:3px;text-transform:uppercase;
+  color:var(--cyan);font-family:'JetBrains Mono',monospace;
+  margin-bottom:10px;
+}
+.sec-title{
+  font-size:clamp(22px,3vw,32px);
+  font-weight:700;
+  margin-bottom:8px;
+}
+.sec-body{
+  font-size:14px;color:var(--muted);
+  line-height:1.7;margin-bottom:40px;max-width:700px;
+}
+
+/* ── ENERGY CHART ── */
+.chart-container{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:28px;
+  margin-top:12px;
+}
+.chart-title{
+  font-size:13px;font-weight:600;color:var(--text);
+  margin-bottom:20px;display:flex;align-items:center;gap:8px;
+}
+.chart-note{
+  font-size:10px;color:var(--muted);margin-top:12px;
+  font-family:'JetBrains Mono',monospace;
+}
+#energyChart{max-height:320px;}
+
+/* ── RISK LEVELS ── */
+.risk-section{background:var(--s1);}
+.risk-machine{
+  display:grid;
+  grid-template-columns:1fr auto 1fr auto 1fr;
+  gap:16px;align-items:center;
+  margin-top:40px;
+}
+.risk-node{
+  background:var(--card);
+  border:2px solid var(--border);
+  border-radius:16px;
+  padding:24px;
+  cursor:pointer;
+  transition:all .4s cubic-bezier(.4,0,.2,1);
+  text-align:center;
+  position:relative;
+  overflow:hidden;
+}
+.risk-node::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  border-radius:14px 14px 0 0;
+}
+.risk-node.low::before{background:var(--low);}
+.risk-node.mid::before{background:var(--mid);}
+.risk-node.high::before{background:var(--high);}
+
+.risk-node:hover,.risk-node.active{transform:translateY(-6px);}
+.risk-node.low:hover,.risk-node.low.active{border-color:var(--low);box-shadow:0 12px 40px rgba(0,229,160,.2);}
+.risk-node.mid:hover,.risk-node.mid.active{border-color:var(--mid);box-shadow:0 12px 40px rgba(255,183,0,.2);}
+.risk-node.high:hover,.risk-node.high.active{border-color:var(--high);box-shadow:0 12px 40px rgba(255,51,85,.2);}
+
+.risk-emoji{font-size:36px;margin-bottom:12px;display:block;}
+.risk-level{font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
+.risk-node.low  .risk-level{color:var(--low);}
+.risk-node.mid  .risk-level{color:var(--mid);}
+.risk-node.high .risk-level{color:var(--high);}
+.risk-short{font-size:11px;color:var(--muted);line-height:1.5;}
+
+.risk-arrow{
+  font-size:24px;color:var(--muted);
+  animation:arrowPulse 2s infinite;
+  text-align:center;
+}
+
+.risk-detail-panel{
+  grid-column:1/-1;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:24px;
+  margin-top:8px;
+  display:none;
+  animation:fadeUp .3s ease;
+}
+.risk-detail-panel.show{display:block;}
+.rdp-title{font-size:16px;font-weight:700;margin-bottom:12px;}
+.rdp-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+.rdp-item{
+  background:rgba(255,255,255,.03);
+  border-radius:10px;padding:14px;
+  border:1px solid var(--border);
+}
+.rdp-item label{font-size:10px;color:var(--muted);letter-spacing:1px;font-weight:600;text-transform:uppercase;display:block;margin-bottom:6px;}
+.rdp-item span{font-size:13px;font-weight:600;color:var(--text);}
+
+/* ── ARCHITECTURE ── */
+.arch-section{background:var(--bg);}
+.layers-wrap{
+  display:flex;flex-direction:column;gap:0;
+  margin-top:40px;
+  position:relative;
+}
+.layers-wrap::before{
+  content:'';
+  position:absolute;left:32px;top:24px;bottom:24px;width:2px;
+  background:linear-gradient(to bottom,#4361EE,#7B2FBE,#00E5A0,#FF3355);
+  opacity:.4;
+}
+.arch-layer{
+  display:flex;gap:20px;align-items:flex-start;
+  padding:24px;
+  margin-left:0;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:16px;
+  margin-bottom:12px;
+  cursor:pointer;
+  transition:all .35s;
+  position:relative;
+}
+.arch-layer:hover{border-color:rgba(0,212,255,.4);transform:translateX(6px);}
+.arch-layer::after{
+  content:'';
+  position:absolute;left:42px;bottom:-12px;
+  width:2px;height:12px;
+  opacity:.3;
+}
+.arch-layer:nth-child(1){--lc:#4361EE;}
+.arch-layer:nth-child(2){--lc:#7B2FBE;}
+.arch-layer:nth-child(3){--lc:#00E5A0;}
+.arch-layer:nth-child(4){--lc:#FF3355;}
+.arch-layer::before{
+  content:'';
+  position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:var(--lc);
+  border-radius:16px 0 0 16px;
+}
+.arch-num{
+  width:40px;height:40px;border-radius:50%;
+  background:rgba(255,255,255,.05);
+  border:2px solid var(--lc);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'JetBrains Mono',monospace;
+  font-size:12px;font-weight:700;
+  color:var(--lc);flex-shrink:0;
+}
+.arch-icon{font-size:28px;flex-shrink:0;margin-top:4px;}
+.arch-info{flex:1;}
+.arch-name{font-size:15px;font-weight:700;color:white;margin-bottom:4px;}
+.arch-desc{font-size:12px;color:var(--muted);line-height:1.6;}
+.arch-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+.arch-tag{
+  font-size:10px;font-weight:600;
+  padding:2px 8px;border-radius:20px;
+  font-family:'JetBrains Mono',monospace;
+  background:rgba(255,255,255,.05);
+  color:var(--muted);
+  border:1px solid var(--border);
+}
+.arch-arrow{
+  font-size:18px;color:var(--muted);
+  align-self:center;flex-shrink:0;
+  transition:transform .3s,color .3s;
+}
+.arch-layer:hover .arch-arrow{transform:translateX(4px);color:var(--cyan);}
+
+/* DATA FLOW ANIMATION */
+.dataflow{
+  display:flex;align-items:center;justify-content:center;
+  gap:8px;margin-top:24px;
+  background:rgba(0,212,255,.04);
+  border:1px solid rgba(0,212,255,.12);
+  border-radius:10px;padding:14px;
+  flex-wrap:wrap;
+}
+.df-step{
+  background:rgba(0,212,255,.1);
+  border:1px solid rgba(0,212,255,.25);
+  color:var(--cyan);
+  padding:6px 14px;border-radius:20px;
+  font-size:11px;font-weight:600;
+  font-family:'JetBrains Mono',monospace;
+  transition:background .3s;
+  position:relative;overflow:hidden;
+}
+.df-step.active{
+  background:rgba(0,212,255,.25);
+  border-color:var(--cyan);
+}
+.df-step::after{
+  content:'';
+  position:absolute;top:0;left:-100%;
+  width:100%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.2),transparent);
+}
+.df-step.active::after{animation:shimmer .8s ease;}
+.df-arrow{color:var(--muted);font-size:14px;}
+
+/* ── ODS ── */
+.ods-section{background:var(--s1);}
+.ods-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:16px;margin-top:40px;
+}
+.ods-card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:28px;
+  cursor:pointer;
+  transition:all .4s;
+  position:relative;overflow:hidden;
+}
+.ods-card::after{
+  content:'';
+  position:absolute;top:0;left:0;right:0;height:3px;
+  border-radius:16px 16px 0 0;
+}
+.ods-card:nth-child(1)::after{background:#1B7240;}
+.ods-card:nth-child(2)::after{background:#C15E21;}
+.ods-card:nth-child(3)::after{background:#3F7E44;}
+
+.ods-card:hover{transform:translateY(-6px);}
+.ods-card:nth-child(1):hover{border-color:#1B7240;box-shadow:0 12px 40px rgba(27,114,64,.2);}
+.ods-card:nth-child(2):hover{border-color:#C15E21;box-shadow:0 12px 40px rgba(193,94,33,.2);}
+.ods-card:nth-child(3):hover{border-color:#3F7E44;box-shadow:0 12px 40px rgba(63,126,68,.2);}
+
+.ods-num{
+  font-size:48px;font-weight:700;
+  font-family:'JetBrains Mono',monospace;
+  line-height:1;margin-bottom:8px;
+}
+.ods-card:nth-child(1) .ods-num{color:#1B7240;}
+.ods-card:nth-child(2) .ods-num{color:#C15E21;}
+.ods-card:nth-child(3) .ods-num{color:#3F7E44;}
+
+.ods-icon-big{font-size:36px;margin-bottom:12px;display:block;}
+.ods-name{font-size:16px;font-weight:700;color:white;margin-bottom:8px;}
+.ods-desc{font-size:12px;color:var(--muted);line-height:1.7;}
+.ods-link{
+  display:inline-block;
+  margin-top:14px;
+  font-size:11px;font-weight:600;
+  color:var(--cyan);
+  font-family:'JetBrains Mono',monospace;
+}
+
+/* ── INDUSTRIES ── */
+.ind-section{background:var(--bg);}
+.ind-tabs{
+  display:flex;gap:8px;
+  flex-wrap:wrap;margin-bottom:24px;
+}
+.ind-tab{
+  padding:8px 18px;border-radius:20px;
+  font-size:12px;font-weight:600;
+  border:1.5px solid var(--border);
+  color:var(--muted);cursor:pointer;
+  transition:all .3s;background:transparent;
+  font-family:'Space Grotesk',sans-serif;
+}
+.ind-tab:hover,.ind-tab.active{
+  border-color:var(--cyan);color:var(--cyan);
+  background:rgba(0,212,255,.08);
+}
+.ind-content{
+  display:none;
+  animation:fadeUp .3s ease;
+}
+.ind-content.show{display:block;}
+.ind-card-big{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:32px;
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:24px;align-items:center;
+}
+.ind-main-icon{font-size:72px;text-align:center;}
+.ind-title{font-size:22px;font-weight:700;margin-bottom:8px;}
+.ind-text{font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:16px;}
+.ind-features{
+  display:flex;flex-direction:column;gap:8px;
+}
+.ind-feat{
+  display:flex;gap:8px;align-items:flex-start;
+  font-size:12px;color:var(--text);
+}
+.ind-feat::before{content:'→';color:var(--cyan);font-weight:700;flex-shrink:0;}
+
+/* ── FOOTER ── */
+footer{
+  background:var(--s1);
+  border-top:1px solid var(--border);
+  padding:48px 24px;
+  text-align:center;
+}
+.footer-title{
+  font-size:24px;font-weight:700;
+  margin-bottom:8px;
+}
+.footer-sub{
+  font-size:13px;color:var(--muted);margin-bottom:24px;
+}
+.footer-authors{
+  display:flex;gap:24px;justify-content:center;
+  flex-wrap:wrap;margin-bottom:32px;
+}
+.author-chip{
+  display:flex;align-items:center;gap:8px;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:8px 16px;
+  font-size:12px;
+}
+.author-dot{
+  width:8px;height:8px;border-radius:50%;flex-shrink:0;
+}
+.footer-copy{font-size:11px;color:var(--muted);margin-top:24px;}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(20px);}
+  to{opacity:1;transform:translateY(0);}
+}
+@keyframes pulse{
+  0%,100%{opacity:1;box-shadow:0 0 6px var(--low);}
+  50%{opacity:.5;box-shadow:0 0 12px var(--low);}
+}
+@keyframes bounce{
+  0%,100%{transform:translateX(-50%) translateY(0);}
+  50%{transform:translateX(-50%) translateY(8px);}
+}
+@keyframes arrowPulse{
+  0%,100%{opacity:.4;}
+  50%{opacity:1;}
+}
+@keyframes shimmer{
+  to{left:100%;}
+}
+@keyframes floatUp{
+  from{opacity:0;transform:translateY(30px);}
+  to{opacity:1;transform:translateY(0);}
+}
+
+/* ── REVEAL ── */
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .7s ease,transform .7s ease;}
+.reveal.visible{opacity:1;transform:translateY(0);}
+</style>
+</head>
+<body>
+
+<canvas id="particles"></canvas>
+
+<!-- ── NAV ── -->
+<nav>
+  <div class="nav-logo">
+    <div class="dot"></div>
+    Blockchain Predictiva · SENSORAMA
+  </div>
+  <div class="nav-links">
+    <a class="nav-link" href="#problema">Problema</a>
+    <a class="nav-link" href="#solucion">Solución</a>
+    <a class="nav-link" href="#arquitectura">Arquitectura</a>
+    <a class="nav-link" href="#ods">ODS</a>
+    <a class="nav-link" href="#sectores">Sectores</a>
+  </div>
+</nav>
+
+<!-- ── HERO ── -->
+<section class="hero" id="inicio">
+  <div class="hero-badge">
+    <span class="dot" style="width:7px;height:7px;background:var(--low);box-shadow:0 0 8px var(--low);border-radius:50%;display:inline-block;"></span>
+    ENISI · REDCOLSI 2026 · Universidad Libre
+  </div>
+  <h1 class="hero-title">
+    Plataforma <em>Blockchain Predictiva</em><br>
+    con Ajustes Dinámicos de Seguridad<br>
+    mediante Inteligencia Artificial
+  </h1>
+  <p class="hero-sub">
+    Una red que lee su propio entorno, detecta el nivel de peligro real y responde de forma proporcional. Ni más. Ni menos. Siempre inteligente.
+  </p>
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <div class="num">138</div>
+      <div class="lbl">TWh/año consume Bitcoin</div>
+    </div>
+    <div class="hero-stat">
+      <div class="num" style="color:var(--low);">60%</div>
+      <div class="lbl">Reducción energética posible</div>
+    </div>
+    <div class="hero-stat">
+      <div class="num">3</div>
+      <div class="lbl">Niveles de respuesta adaptativa</div>
+    </div>
+    <div class="hero-stat">
+      <div class="num">4</div>
+      <div class="lbl">Capas de arquitectura modular</div>
+    </div>
+  </div>
+  <div class="scroll-hint">EXPLORA ↓</div>
+</section>
+
+<!-- ── PROBLEMA + CHART ── -->
+<section id="problema" style="background:var(--s1);">
+  <div class="sec-wrap">
+    <div class="sec-label reveal">El Problema</div>
+    <h2 class="sec-title reveal">Las redes blockchain actuales siempre están al máximo</h2>
+    <p class="sec-body reveal">
+      Sin importar si la red está tranquila o bajo ataque, el nivel de seguridad es el mismo. Eso genera un derroche energético masivo comparable al consumo de países enteros. El gráfico muestra el impacto real.
+    </p>
+
+    <div class="chart-container reveal">
+      <div class="chart-title">
+        ⚡ Consumo energético anual por red blockchain (TWh/año) — escala logarítmica
+      </div>
+      <canvas id="energyChart"></canvas>
+      <div class="chart-note">
+        Fuentes: CCAF 2025 · Zhang & Miller 2025 · CCRI PoS Report 2023 · NIST 2024 · † Dato pre-merge sept. 2022
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:24px;">
+      <div class="hero-stat reveal" style="text-align:left;">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">PROBLEMA 1</div>
+        <div style="font-size:14px;font-weight:600;color:#FF6B6B;margin-bottom:6px;">⚡ Derroche Energético</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6;">Consumo constante al máximo aunque no haya ninguna amenaza activa.</div>
+      </div>
+      <div class="hero-stat reveal" style="text-align:left;">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">PROBLEMA 2</div>
+        <div style="font-size:14px;font-weight:600;color:#FFB700;margin-bottom:6px;">💻 Amenaza Cuántica</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6;">RSA y ECDSA son vulnerables al algoritmo de Shor en computadoras cuánticas.</div>
+      </div>
+      <div class="hero-stat reveal" style="text-align:left;">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">PROBLEMA 3</div>
+        <div style="font-size:14px;font-weight:600;color:var(--high);margin-bottom:6px;">🔒 Sin Adaptabilidad</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6;">El protocolo no puede subir ni bajar su protección según el riesgo real.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SOLUCIÓN ── -->
+<section id="solucion" class="risk-section">
+  <div class="sec-wrap">
+    <div class="sec-label reveal">La Solución</div>
+    <h2 class="sec-title reveal">Tres niveles de respuesta proporcional</h2>
+    <p class="sec-body reveal">
+      La IA monitorea la red en tiempo real y activa exactamente el nivel de seguridad que se necesita. Haz clic en cada nivel para ver cómo responde el sistema.
+    </p>
+
+    <div class="risk-machine reveal">
+      <div class="risk-node low" onclick="showRisk('low',this)" id="node-low">
+        <span class="risk-emoji">🟢</span>
+        <div class="risk-level">Riesgo Bajo</div>
+        <div class="risk-short">Consenso baja · RSA/ECC · consumo mínimo</div>
+      </div>
+      <div class="risk-arrow">→</div>
+      <div class="risk-node mid" onclick="showRisk('mid',this)" id="node-mid">
+        <span class="risk-emoji">🟡</span>
+        <div class="risk-level">Riesgo Medio</div>
+        <div class="risk-short">Consenso sube · auditoría activa · moderado</div>
+      </div>
+      <div class="risk-arrow">→</div>
+      <div class="risk-node high" onclick="showRisk('high',this)" id="node-high">
+        <span class="risk-emoji">🔴</span>
+        <div class="risk-level">Riesgo Alto</div>
+        <div class="risk-short">Consenso máximo · Kyber+Dilithium · cuántico</div>
+      </div>
+    </div>
+
+    <div class="risk-detail-panel" id="risk-panel">
+      <div class="rdp-title" id="rdp-title"></div>
+      <div class="rdp-grid" id="rdp-grid"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── ARQUITECTURA ── -->
+<section id="arquitectura" class="arch-section">
+  <div class="sec-wrap">
+    <div class="sec-label reveal">Arquitectura</div>
+    <h2 class="sec-title reveal">Cuatro capas. Un sistema inteligente.</h2>
+    <p class="sec-body reveal">
+      Cada capa tiene una función específica. Trabajan en secuencia y en tiempo real, sin detener la red.
+    </p>
+
+    <div class="layers-wrap reveal">
+      <div class="arch-layer">
+        <div class="arch-num">C1</div>
+        <div class="arch-icon">📡</div>
+        <div class="arch-info">
+          <div class="arch-name">Capa de Observabilidad</div>
+          <div class="arch-desc">Monitoreo continuo de la red en tiempo real. Recolecta TPS, latencia de propagación de bloques (&gt;500ms = alerta · &gt;2.000ms = amenaza alta) y hashrate. Genera el flujo de entrada para el motor de IA.</div>
+          <div class="arch-tags">
+            <span class="arch-tag">TPS</span>
+            <span class="arch-tag">Latencia</span>
+            <span class="arch-tag">Hashrate</span>
+            <span class="arch-tag">Nodos</span>
+          </div>
+        </div>
+        <div class="arch-arrow">↓</div>
+      </div>
+
+      <div class="arch-layer">
+        <div class="arch-num">C2</div>
+        <div class="arch-icon">🧠</div>
+        <div class="arch-info">
+          <div class="arch-name">Motor de IA Predictiva</div>
+          <div class="arch-desc">LSTM y Random Forest clasifican el estado de riesgo: Bajo / Medio / Alto. Criterio de aceptación mínimo: F1-score ≥ 0,90. Es el cerebro del sistema — recibe datos y decide.</div>
+          <div class="arch-tags">
+            <span class="arch-tag">LSTM</span>
+            <span class="arch-tag">Random Forest</span>
+            <span class="arch-tag">F1 ≥ 0.90</span>
+            <span class="arch-tag">Tiempo real</span>
+          </div>
+        </div>
+        <div class="arch-arrow">↓</div>
+      </div>
+
+      <div class="arch-layer">
+        <div class="arch-num">C3</div>
+        <div class="arch-icon">⚙️</div>
+        <div class="arch-info">
+          <div class="arch-name">Núcleo de Consenso Adaptativo</div>
+          <div class="arch-desc">Ajusta los parámetros de validación en tiempo de ejecución según la clasificación de riesgo de la Capa 2. Modifica confirmaciones requeridas, tiempo de bloque y quórum. Sin detener la red. Sin fork del protocolo.</div>
+          <div class="arch-tags">
+            <span class="arch-tag">Parámetros variables</span>
+            <span class="arch-tag">Sin fork</span>
+            <span class="arch-tag">Tiempo real</span>
+          </div>
+        </div>
+        <div class="arch-arrow">↓</div>
+      </div>
+
+      <div class="arch-layer">
+        <div class="arch-num">C4</div>
+        <div class="arch-icon">🛡️</div>
+        <div class="arch-info">
+          <div class="arch-name">Módulo de Resiliencia Criptográfica</div>
+          <div class="arch-desc">Activación selectiva SOLO ante riesgo Alto. CRYSTALS-Kyber (FIPS 203) para cifrado de claves y CRYSTALS-Dilithium (FIPS 204) para firmas digitales. Estándares post-cuánticos del NIST 2024. Resistentes incluso a computadoras cuánticas.</div>
+          <div class="arch-tags">
+            <span class="arch-tag">CRYSTALS-Kyber</span>
+            <span class="arch-tag">Dilithium</span>
+            <span class="arch-tag">NIST 2024</span>
+            <span class="arch-tag">Post-cuántico</span>
+          </div>
+        </div>
+        <div class="arch-arrow">✓</div>
+      </div>
+    </div>
+
+    <div class="dataflow reveal" id="dataflow">
+      <div class="df-step" id="df1">Monitorea</div>
+      <div class="df-arrow">→</div>
+      <div class="df-step" id="df2">Analiza</div>
+      <div class="df-arrow">→</div>
+      <div class="df-step" id="df3">Clasifica</div>
+      <div class="df-arrow">→</div>
+      <div class="df-step" id="df4">Ajusta</div>
+      <div class="df-arrow">→</div>
+      <div class="df-step" id="df5">Protege</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── ODS ── -->
+<section id="ods" class="ods-section">
+  <div class="sec-wrap">
+    <div class="sec-label reveal">Impacto Global</div>
+    <h2 class="sec-title reveal">Objetivos de Desarrollo Sostenible — ONU</h2>
+    <p class="sec-body reveal">
+      Este proyecto no solo mejora la seguridad. Tiene un impacto directo en tres de los Objetivos de Desarrollo Sostenible de las Naciones Unidas.
+    </p>
+
+    <div class="ods-grid">
+      <div class="ods-card reveal">
+        <span class="ods-icon-big">⚡</span>
+        <div class="ods-num">07</div>
+        <div class="ods-name">Energía Asequible y No Contaminante</div>
+        <div class="ods-desc">
+          Al operar en modo eficiente durante períodos de baja amenaza, la red consume hasta un 60% menos de energía que sistemas tradicionales como Bitcoin o Ethereum PoW. Menor consumo = menor huella de carbono.
+        </div>
+        <div class="ods-link">sdgs.un.org → ODS 7 ↗</div>
+      </div>
+      <div class="ods-card reveal">
+        <span class="ods-icon-big">🏭</span>
+        <div class="ods-num">09</div>
+        <div class="ods-name">Industria, Innovación e Infraestructura</div>
+        <div class="ods-desc">
+          La arquitectura modular de cuatro capas es escalable a múltiples sectores. Una sola infraestructura puede adoptarse en banca, salud, cadena de suministro y firma digital, con las mismas garantías de seguridad.
+        </div>
+        <div class="ods-link">sdgs.un.org → ODS 9 ↗</div>
+      </div>
+      <div class="ods-card reveal">
+        <span class="ods-icon-big">🌍</span>
+        <div class="ods-num">13</div>
+        <div class="ods-name">Acción por el Clima</div>
+        <div class="ods-desc">
+          Una red blockchain que reduce emisiones de CO₂ de forma activa es tecnología sostenible. La investigación de Zhang & Miller (2025) respalda que el consenso elástico puede lograr reducciones energéticas reales y medibles.
+        </div>
+        <div class="ods-link">sdgs.un.org → ODS 13 ↗</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SECTORES ── -->
+<section id="sectores" class="ind-section">
+  <div class="sec-wrap">
+    <div class="sec-label reveal">Aplicaciones</div>
+    <h2 class="sec-title reveal">Una arquitectura. Múltiples industrias.</h2>
+    <p class="sec-body reveal">
+      La misma plataforma blockchain predictiva puede adoptarse en cualquier sector que necesite datos inalterables, seguros y eficientes. Selecciona una industria para ver su caso de uso.
+    </p>
+
+    <div class="ind-tabs reveal">
+      <button class="ind-tab active" onclick="showInd('banca',this)">🏦 Banca</button>
+      <button class="ind-tab" onclick="showInd('legal',this)">📄 Firmas Digitales</button>
+      <button class="ind-tab" onclick="showInd('supply',this)">🔗 Cadena de Suministro</button>
+      <button class="ind-tab" onclick="showInd('salud',this)">🏥 Salud</button>
+    </div>
+
+    <div class="ind-content show" id="ind-banca">
+      <div class="ind-card-big">
+        <div>
+          <div class="ind-title">Sector Bancario</div>
+          <div class="ind-text">Transacciones interbancarias donde el protocolo de seguridad se adapta automáticamente al riesgo detectado en tiempo real. En momentos de calma, menor consumo y costos operativos. Ante un ataque, protección máxima.</div>
+          <div class="ind-features">
+            <div class="ind-feat">Detección predictiva de fraude antes de que ocurra</div>
+            <div class="ind-feat">Transacciones con certeza criptográfica post-cuántica</div>
+            <div class="ind-feat">Reducción de costos operativos en períodos de baja amenaza</div>
+            <div class="ind-feat">Cumplimiento normativo con datos 100% inalterables</div>
+          </div>
+        </div>
+        <div class="ind-main-icon">🏦</div>
+      </div>
+    </div>
+
+    <div class="ind-content" id="ind-legal">
+      <div class="ind-card-big">
+        <div>
+          <div class="ind-title">Firmas y Documentos Digitales</div>
+          <div class="ind-text">Contratos legales, escrituras, títulos universitarios y actas notariales con certeza criptográfica resistente incluso a computadoras cuánticas. Cualquier documento registrado es inalterable para siempre.</div>
+          <div class="ind-features">
+            <div class="ind-feat">Firmas digitales con CRYSTALS-Dilithium (FIPS 204)</div>
+            <div class="ind-feat">Documentos inalterables verificables globalmente</div>
+            <div class="ind-feat">Sin necesidad de notarios intermediarios costosos</div>
+            <div class="ind-feat">Resistencia cuántica para archivos a largo plazo</div>
+          </div>
+        </div>
+        <div class="ind-main-icon">📄</div>
+      </div>
+    </div>
+
+    <div class="ind-content" id="ind-supply">
+      <div class="ind-card-big">
+        <div>
+          <div class="ind-title">Cadena de Suministro</div>
+          <div class="ind-text">Cada movimiento, entrega, acuerdo o transacción queda registrado de forma trazable, auditable e inmodificable en tiempo real. Sin intermediarios. Sin posibilidad de manipulación de datos.</div>
+          <div class="ind-features">
+            <div class="ind-feat">Trazabilidad completa de productos desde origen hasta destino</div>
+            <div class="ind-feat">Auditoría automática e inalterable de cada transacción</div>
+            <div class="ind-feat">Detección de comportamientos anómalos en la cadena</div>
+            <div class="ind-feat">Reducción de fraude y errores en registros logísticos</div>
+          </div>
+        </div>
+        <div class="ind-main-icon">🔗</div>
+      </div>
+    </div>
+
+    <div class="ind-content" id="ind-salud">
+      <div class="ind-card-big">
+        <div>
+          <div class="ind-title">Sector Salud</div>
+          <div class="ind-text">Registros médicos, historial de pacientes y recetas digitales almacenados de forma segura, privada e inalterable. La activación post-cuántica garantiza la confidencialidad de datos de salud a largo plazo.</div>
+          <div class="ind-features">
+            <div class="ind-feat">Historiales médicos inmutables e interoperables</div>
+            <div class="ind-feat">Acceso controlado con criptografía post-cuántica</div>
+            <div class="ind-feat">Trazabilidad de medicamentos en cadena de distribución</div>
+            <div class="ind-feat">Cumplimiento de normativas de privacidad de datos</div>
+          </div>
+        </div>
+        <div class="ind-main-icon">🏥</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer id="equipo">
+  <div class="footer-title">Semillero SENSORAMA · Universidad Libre</div>
+  <div class="footer-sub">Facultad de Ingeniería · Bogotá D.C., Colombia · 2026</div>
+  <div class="footer-authors">
+    <div class="author-chip">
+      <div class="author-dot" style="background:var(--sara);box-shadow:0 0 6px var(--sara);"></div>
+      Sara V. Castelblanco Gálvez
+    </div>
+    <div class="author-chip">
+      <div class="author-dot" style="background:var(--laura);box-shadow:0 0 6px var(--laura);"></div>
+      Laura G. Montaña Gauna
+    </div>
+  </div>
+  <div style="font-size:12px;color:var(--muted);">
+    ENISI · REDCOLSI 2026 · Conocimiento que transforma
+  </div>
+  <div class="footer-copy">
+    Plataforma Blockchain Predictiva con Ajustes Dinámicos de Seguridad mediante Inteligencia Artificial
+  </div>
+</footer>
+
+<script>
+// ── PARTICLES ──────────────────────────────────────────
+const canvas = document.getElementById('particles');
+const ctx = canvas.getContext('2d');
+let W, H, particles = [];
+
+function resize() {
+  W = canvas.width  = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+class Particle {
+  constructor() { this.reset(); }
+  reset() {
+    this.x = Math.random() * W;
+    this.y = Math.random() * H;
+    this.r = Math.random() * 1.5 + 0.3;
+    this.vx = (Math.random() - 0.5) * 0.3;
+    this.vy = (Math.random() - 0.5) * 0.3;
+    this.alpha = Math.random() * 0.5 + 0.1;
+    this.color = Math.random() > 0.7 ? '#00D4FF' : '#1A2A4A';
+  }
+  update() {
+    this.x += this.vx; this.y += this.vy;
+    if (this.x < 0 || this.x > W || this.y < 0 || this.y > H) this.reset();
+  }
+  draw() {
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+    ctx.fillStyle = this.color;
+    ctx.globalAlpha = this.alpha;
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+}
+
+for (let i = 0; i < 120; i++) particles.push(new Particle());
+
+function drawLines() {
+  for (let i = 0; i < particles.length; i++) {
+    for (let j = i + 1; j < particles.length; j++) {
+      const dx = particles[i].x - particles[j].x;
+      const dy = particles[i].y - particles[j].y;
+      const d = Math.sqrt(dx*dx + dy*dy);
+      if (d < 100) {
+        ctx.beginPath();
+        ctx.moveTo(particles[i].x, particles[i].y);
+        ctx.lineTo(particles[j].x, particles[j].y);
+        ctx.strokeStyle = '#00D4FF';
+        ctx.globalAlpha = (1 - d/100) * 0.08;
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+      }
+    }
+  }
+}
+
+function animate() {
+  ctx.clearRect(0, 0, W, H);
+  particles.forEach(p => { p.update(); p.draw(); });
+  drawLines();
+  requestAnimationFrame(animate);
+}
+animate();
+
+// ── ENERGY CHART ───────────────────────────────────────
+const labels = ['Bitcoin (PoW)', 'Ethereum PoW†', 'Ethereum PoS', 'Polkadot', 'Solana', 'Cardano', 'Tezos', 'Sistema\nPropuesto'];
+const values  = [138000, 74600, 2.6, 0.8, 0.767, 0.6, 0.128, 0.15];
+const colors  = [
+  'rgba(239,35,60,0.85)',
+  'rgba(239,35,60,0.6)',
+  'rgba(255,183,0,0.8)',
+  'rgba(99,170,255,0.75)',
+  'rgba(130,200,255,0.7)',
+  'rgba(110,190,255,0.65)',
+  'rgba(90,180,255,0.6)',
+  'rgba(0,229,160,0.9)',
+];
+const borders = colors.map(c => c.replace(/[\d.]+\)$/, '1)'));
+
+const cData = {
+  labels,
+  datasets: [{
+    label: 'Consumo (GWh/año)',
+    data: values,
+    backgroundColor: colors,
+    borderColor: borders,
+    borderWidth: 1.5,
+    borderRadius: 6,
+  }]
+};
+
+new Chart(document.getElementById('energyChart'), {
+  type: 'bar',
+  data: cData,
+  options: {
+    responsive: true,
+    animation: { duration: 1200, easing: 'easeOutQuart' },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: ctx => {
+            const v = ctx.raw;
+            if (v >= 1000) return ` ${(v/1000).toFixed(1)} TWh/año`;
+            if (v >= 1)    return ` ${v} GWh/año`;
+            return ` ${(v*1000).toFixed(0)} MWh/año`;
+          }
+        },
+        backgroundColor: '#0D1526',
+        borderColor: '#162038',
+        borderWidth: 1,
+        titleColor: '#E2EDF8',
+        bodyColor: '#00D4FF',
+        padding: 12,
+      }
+    },
+    scales: {
+      y: {
+        type: 'logarithmic',
+        grid: { color: 'rgba(22,32,56,0.8)' },
+        ticks: {
+          color: '#6A88AA',
+          font: { family: 'JetBrains Mono', size: 10 },
+          callback: v => v >= 1000 ? `${v/1000}TWh` : v >= 1 ? `${v}GWh` : `${v*1000}MWh`
+        }
+      },
+      x: {
+        grid: { display: false },
+        ticks: { color: '#6A88AA', font: { family: 'Space Grotesk', size: 11 } }
+      }
+    }
+  }
+});
+
+// ── RISK PANEL ─────────────────────────────────────────
+const riskData = {
+  low: {
+    title: '🟢 RIESGO BAJO — El sistema opera en modo eficiente',
+    color: '#00E5A0',
+    items: [
+      { label: 'Consenso', val: 'Parámetros reducidos. Menos confirmaciones requeridas.' },
+      { label: 'Criptografía', val: 'Algoritmos estándar RSA / ECC. Bajo overhead.' },
+      { label: 'Consumo', val: 'Mínimo. Hasta 60% menos que sistemas fijos.' }
+    ]
+  },
+  mid: {
+    title: '🟡 RIESGO MEDIO — El sistema se prepara y vigila',
+    color: '#FFB700',
+    items: [
+      { label: 'Consenso', val: 'Parámetros estándar + auditoría activa habilitada.' },
+      { label: 'Criptografía', val: 'RSA / ECC con capa adicional de registro y auditoría.' },
+      { label: 'Consumo', val: 'Moderado. Vigilancia activa con overhead controlado.' }
+    ]
+  },
+  high: {
+    title: '🔴 RIESGO ALTO — Protección máxima activada automáticamente',
+    color: '#FF3355',
+    items: [
+      { label: 'Consenso', val: 'Umbral de confirmaciones reforzado al máximo. Quórum estricto.' },
+      { label: 'Criptografía', val: 'CRYSTALS-Kyber (FIPS 203) + CRYSTALS-Dilithium (FIPS 204). Resistente a ataques cuánticos.' },
+      { label: 'Consumo', val: 'Elevado. Solo cuando realmente se necesita. No permanente.' }
+    ]
+  }
+};
+
+let activeRisk = null;
+
+function showRisk(level, el) {
+  document.querySelectorAll('.risk-node').forEach(n => n.classList.remove('active'));
+  const panel = document.getElementById('risk-panel');
+  if (activeRisk === level) {
+    panel.classList.remove('show');
+    activeRisk = null;
+    return;
+  }
+  el.classList.add('active');
+  activeRisk = level;
+  const d = riskData[level];
+  document.getElementById('rdp-title').innerHTML =
+    `<span style="color:${d.color}">${d.title}</span>`;
+  document.getElementById('rdp-grid').innerHTML = d.items.map(i =>
+    `<div class="rdp-item">
+       <label>${i.label}</label>
+       <span style="color:${d.color}">${i.val}</span>
+     </div>`
+  ).join('');
+  panel.style.borderColor = d.color + '40';
+  panel.classList.add('show');
+  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// ── INDUSTRY TABS ──────────────────────────────────────
+function showInd(id, btn) {
+  document.querySelectorAll('.ind-content').forEach(c => c.classList.remove('show'));
+  document.querySelectorAll('.ind-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('ind-' + id).classList.add('show');
+  btn.classList.add('active');
+}
+
+// ── DATAFLOW ANIMATION ─────────────────────────────────
+let dfIdx = 0;
+const dfSteps = ['df1','df2','df3','df4','df5'];
+setInterval(() => {
+  dfSteps.forEach(s => document.getElementById(s).classList.remove('active'));
+  document.getElementById(dfSteps[dfIdx]).classList.add('active');
+  dfIdx = (dfIdx + 1) % dfSteps.length;
+}, 1000);
+
+// ── SCROLL REVEAL ──────────────────────────────────────
+const revObs = new IntersectionObserver((entries) => {
+  entries.forEach((e, i) => {
+    if (e.isIntersecting) {
+      setTimeout(() => e.target.classList.add('visible'), i * 80);
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.reveal').forEach(el => revObs.observe(el));
+</script>
+</body>
+</html>
 
